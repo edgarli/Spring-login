@@ -9,6 +9,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -27,13 +28,17 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     final
     AccessDeniedHandlerImpl accessDeniedHandler;
 
+    final
+    UserDetailsService userDetailsService;
+
     @Autowired
-    public SecurityConfig(AuthenticationEntryPointImpl authenticationEntryPoint, AuthenticationSuccessHandlerImpl authenticationSuccessHandler, LogoutSuccessHandlerImpl logoutSuccessHandler, AuthenticationFailureHandlerImpl authenticationFailureHandler, AccessDeniedHandlerImpl accessDeniedHandler) {
+    public SecurityConfig(AuthenticationEntryPointImpl authenticationEntryPoint, AuthenticationSuccessHandlerImpl authenticationSuccessHandler, LogoutSuccessHandlerImpl logoutSuccessHandler, AuthenticationFailureHandlerImpl authenticationFailureHandler, AccessDeniedHandlerImpl accessDeniedHandler, UserDetailsService userDetailsService) {
         this.authenticationEntryPoint = authenticationEntryPoint;
         this.authenticationSuccessHandler = authenticationSuccessHandler;
         this.logoutSuccessHandler = logoutSuccessHandler;
         this.authenticationFailureHandler = authenticationFailureHandler;
         this.accessDeniedHandler = accessDeniedHandler;
+        this.userDetailsService = userDetailsService;
     }
 
     final AuthenticationSuccessHandlerImpl authenticationSuccessHandler;
@@ -72,6 +77,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     public PasswordEncoder passwordEncoder() {
         PasswordEncoder encoder = new BCryptPasswordEncoder(11);
         return encoder;
+    }
+
+    @Autowired
+    public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
+        auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
     }
 
 }
